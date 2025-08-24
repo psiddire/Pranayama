@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<menu id="MainMenu">
+    <menu-item id="start_session" label="@Strings.StartSession" />
+    <menu-item id="instructions" label="@Strings.Instructions" />
+    <menu-item id="settings" label="@Strings.Settings" />
+</menu>

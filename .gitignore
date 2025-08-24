@@ -1,0 +1,22 @@
+# Build outputs
+bin/
+*.prg
+
+# Developer keys (sensitive)
+developer_key*
+*.der
+*.pem
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp

@@ -1,0 +1,10 @@
+project.manifest = manifest.xml
+base.sourcePath = source
+base.resourcePath = resources
+
+# Build targets
+vivoactive4.sourcePath = $(base.sourcePath)
+vivoactive4.resourcePath = $(base.resourcePath)
+
+vivoactive4s.sourcePath = $(base.sourcePath) 
+vivoactive4s.resourcePath = $(base.resourcePath)

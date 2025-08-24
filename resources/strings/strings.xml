@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<strings>
+    <string id="AppName">Pranayama</string>
+    
+    <!-- Main Menu -->
+    <string id="StartSession">Start Session</string>
+    <string id="Instructions">Instructions</string>
+    <string id="Settings">Settings</string>
+    
+    <!-- Session States -->
+    <string id="Welcome">Welcome to Pranayama</string>
+    <string id="SessionReady">15-minute breathing session</string>
+    <string id="PressStart">Press START to begin</string>
+    <string id="SessionComplete">Session Complete!</string>
+    
+    <!-- Techniques -->
+    <string id="Bhastrika">Bhastrika</string>
+    <string id="BhastrikaDesc">Bellows Breath</string>
+    <string id="Kapalabhati">Kapalabhati</string>
+    <string id="KapalabhatiDesc">Skull Shining Breath</string>
+    <string id="NadiShodhana">Nadi Shodhana</string>
+    <string id="NadiShodhanaDesc">Alternate Nostril</string>
+    <string id="Bhramari">Bhramari</string>
+    <string id="BhramariDesc">Humming Bee Breath</string>
+    
+    <!-- Instructions -->
+    <string id="InhaleInstruction">Inhale</string>
+    <string id="ExhaleInstruction">Exhale</string>
+    <string id="HoldInstruction">Hold</string>
+    <string id="RestInstruction">Rest</string>
+    <string id="PrepareNext">Prepare for next</string>
+    
+    <!-- Timer -->
+    <string id="TimeRemaining">Time Remaining</string>
+    <string id="Cycle">Cycle</string>
+    <string id="Round">Round</string>
+    
+    <!-- Breathing Phases -->
+    <string id="InhaleLeft">Inhale Left</string>
+    <string id="ExhaleRight">Exhale Right</string>
+    <string id="InhaleRight">Inhale Right</string>
+    <string id="ExhaleLeft">Exhale Left</string>
+    <string id="Humming">Humming</string>
+</strings>
