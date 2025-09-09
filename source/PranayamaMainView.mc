@@ -5,6 +5,8 @@ import Toybox.Timer;
 import Toybox.Math;
 import Toybox.Attention;
 import Toybox.SensorHistory;
+import Toybox.Application.Storage;
+import Toybox.Time;
 
 enum SessionState {
     STATE_WELCOME,
@@ -33,6 +35,8 @@ class PranayamaMainView extends WatchUi.View {
     private var _isInhaling as Boolean = true;
     private var _startStressLevel as Number? = null;
     private var _endStressLevel as Number? = null;
+    private var _sessionStartTime as Time.Moment? = null;
+    private var _totalSessionDuration as Number = 0;
 
     function initialize() {
         View.initialize();
@@ -60,9 +64,22 @@ class PranayamaMainView extends WatchUi.View {
         switch (_state) {
             case STATE_WELCOME:
                 dc.drawText(centerX, centerY - 80, Graphics.FONT_MEDIUM, "Pranayama", Graphics.TEXT_JUSTIFY_CENTER);
-                dc.drawText(centerX, centerY - 40, Graphics.FONT_SMALL, "10-minute session", Graphics.TEXT_JUSTIFY_CENTER);
-                dc.drawText(centerX, centerY - 0, Graphics.FONT_TINY, "4 breathing techniques", Graphics.TEXT_JUSTIFY_CENTER);
-                dc.drawText(centerX, centerY + 80, Graphics.FONT_SMALL, "Tap to begin", Graphics.TEXT_JUSTIFY_CENTER);
+                dc.drawText(centerX, centerY - 50, Graphics.FONT_SMALL, "10-minute session", Graphics.TEXT_JUSTIFY_CENTER);
+                dc.drawText(centerX, centerY - 30, Graphics.FONT_TINY, "4 breathing techniques", Graphics.TEXT_JUSTIFY_CENTER);
+                
+                // Show session statistics
+                var stats = getSessionStats();
+                if (stats != null) {
+                    var totalSessions = stats.get("totalSessions");
+                    var completedSessions = stats.get("completedSessions");
+                    if (totalSessions != null && totalSessions instanceof Number && (totalSessions as Number) > 0) {
+                        dc.drawText(centerX, centerY + 10, Graphics.FONT_TINY, 
+                            "Sessions: " + completedSessions + "/" + totalSessions, 
+                            Graphics.TEXT_JUSTIFY_CENTER);
+                    }
+                }
+                
+                dc.drawText(centerX, centerY + 70, Graphics.FONT_SMALL, "Tap to begin", Graphics.TEXT_JUSTIFY_CENTER);
                 break;
                 
             case STATE_BHASTRIKA_INTRO:
@@ -283,12 +300,95 @@ class PranayamaMainView extends WatchUi.View {
         return null;
     }
     
+    private function saveSessionData(completed as Boolean) as Void {
+        var sessionData = {
+            "timestamp" => Time.now().value(),
+            "completed" => completed,
+            "duration" => _totalSessionDuration,
+            "startStress" => _startStressLevel,
+            "endStress" => _endStressLevel,
+            "stressImprovement" => (_startStressLevel != null && _endStressLevel != null) ? 
+                (_startStressLevel - _endStressLevel) : null
+        };
+        
+        // Get existing sessions or create new array
+        var existingSessions = Storage.getValue("sessionHistory");
+        if (existingSessions == null || !(existingSessions instanceof Array)) {
+            existingSessions = [] as Array;
+        } else {
+            existingSessions = existingSessions as Array;
+        }
+        
+        // Add new session
+        existingSessions.add(sessionData);
+        
+        // Keep only last 50 sessions to manage storage
+        if (existingSessions.size() > 50) {
+            existingSessions = existingSessions.slice(-50, null);
+        }
+        
+        // Save updated history
+        Storage.setValue("sessionHistory", existingSessions);
+        
+        // Update statistics
+        var statsData = Storage.getValue("sessionStats");
+        var stats;
+        if (statsData == null || !(statsData instanceof Dictionary)) {
+            stats = {
+                "totalSessions" => 0,
+                "completedSessions" => 0,
+                "totalMinutes" => 0,
+                "avgStressImprovement" => 0
+            } as Dictionary;
+        } else {
+            stats = statsData as Dictionary;
+        }
+        
+        var totalSessions = stats.get("totalSessions");
+        var completedSessions = stats.get("completedSessions");
+        var totalMinutes = stats.get("totalMinutes");
+        
+        var totalSessionsNum = (totalSessions != null && totalSessions instanceof Number) ? 
+            (totalSessions as Number) : 0;
+        var completedSessionsNum = (completedSessions != null && completedSessions instanceof Number) ? 
+            (completedSessions as Number) : 0;
+        var totalMinutesNum = (totalMinutes != null && totalMinutes instanceof Number) ? 
+            (totalMinutes as Number) : 0;
+        
+        stats.put("totalSessions", totalSessionsNum + 1);
+        if (completed) {
+            stats.put("completedSessions", completedSessionsNum + 1);
+        }
+        stats.put("totalMinutes", totalMinutesNum + (_totalSessionDuration / 60));
+        
+        Storage.setValue("sessionStats", stats);
+    }
+    
+    private function getSessionStats() as Dictionary? {
+        var stats = Storage.getValue("sessionStats");
+        if (stats != null && stats instanceof Dictionary) {
+            return stats as Dictionary;
+        }
+        return null;
+    }
+    
+    function handleEarlyExit() as Void {
+        // Save incomplete session data if session was started
+        if (_sessionStartTime != null && _state != STATE_WELCOME && _state != STATE_COMPLETE) {
+            var endTime = Time.now();
+            _totalSessionDuration = endTime.subtract(_sessionStartTime).value();
+            _endStressLevel = getCurrentStressLevel();
+            saveSessionData(false);  // Mark as incomplete
+        }
+    }
+    
     function startSession() as Void {
         switch (_state) {
             case STATE_WELCOME:
                 _state = STATE_BHASTRIKA_INTRO;
                 _sessionTime = 0;
                 _timerTicks = 0;
+                _sessionStartTime = Time.now();  // Capture session start time
                 _startStressLevel = getCurrentStressLevel();  // Capture initial stress level
                 startTimer();
                 break;
@@ -310,6 +410,8 @@ class PranayamaMainView extends WatchUi.View {
                 _state = STATE_WELCOME;
                 _startStressLevel = null;
                 _endStressLevel = null;
+                _sessionStartTime = null;
+                _totalSessionDuration = 0;
                 break;
         }
         WatchUi.requestUpdate();
@@ -488,6 +590,16 @@ class PranayamaMainView extends WatchUi.View {
         } else if (_state == STATE_BHRAMARI && _sessionTime >= bhramariTime) {
             _state = STATE_COMPLETE;
             _endStressLevel = getCurrentStressLevel();  // Capture final stress level
+            
+            // Calculate total session duration
+            if (_sessionStartTime != null) {
+                var endTime = Time.now();
+                _totalSessionDuration = endTime.subtract(_sessionStartTime).value();
+            }
+            
+            // Save completed session data
+            saveSessionData(true);
+            
             stopTimer();
             triggerHapticFeedback();
         }

@@ -40,6 +40,9 @@ class PranayamaMainDelegate extends WatchUi.BehaviorDelegate {
             return true;
         } else if (key == WatchUi.KEY_DOWN || key == WatchUi.KEY_ESC) {
             // Bottom right button or back - exit the app
+            if (_view != null) {
+                _view.handleEarlyExit();  // Save incomplete session data
+            }
             System.exit();
             return true;
         }
