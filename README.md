@@ -2,6 +2,11 @@
 
 A 10-minute pranayama (breathing) session app designed for Garmin Vivoactive 4 smartwatches. Features animated breathing exercises for four traditional pranayama techniques.
 
+<img width="377" height="556" alt="Screenshot 2025-09-09 at 10 23 57 AM" src="https://github.com/user-attachments/assets/e162aa2e-ba66-4544-83cc-b13a80146462" />
+
+<img width="377" height="556" alt="Screenshot 2025-09-09 at 10 26 06 AM" src="https://github.com/user-attachments/assets/eee098eb-a795-4357-8152-4da5cea0e79b" />
+
+
 ## Features
 
 ### 10-Minute Session Structure
